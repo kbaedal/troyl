@@ -1,0 +1,1 @@
+./Obj/main.cpp.o ./Obj/hitables.cpp.o ./Obj/textures.cpp.o ./Obj/materials.cpp.o ./Obj/rangen.cpp.o ./Obj/vec3.cpp.o ./Obj/aabb.cpp.o ./Obj/perlin.cpp.o   
