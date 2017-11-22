@@ -19,6 +19,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+struct scene
+{
+    hitable *world;
+    camera  *cam;
+    int nx, ny, ns;
+};
+
 vec3 color(const ray &r, hitable *world, int depth)
 {
     hit_record rec;
@@ -149,7 +156,7 @@ hitable *simple_light()
     return new hitable_list(list, 4);
 }
 
-hitable *cornell_box()
+void cornell_box(scene &the_scene)
 {
     hitable **list = new hitable*[8];
     int i = 0;
@@ -171,10 +178,21 @@ hitable *cornell_box()
     list[i++] = new translate(new rotate_y(new box(vec3(0, 0, 0), vec3(165, 165, 165), white), -18), vec3(130, 0, 65));
     list[i++] = new translate(new rotate_y(new box(vec3(0, 0, 0), vec3(165, 330, 165), white), 15), vec3(265, 0, 295));
     
-    return new hitable_list(list, i);
+    the_scene.cam = new camera(
+        vec3(278, 278, -800),       // lookfrom
+        vec3(278.0, 278.0, 0.0),    // lookat
+        vec3(0.0, 1.0, 0.0),        // camup
+        40.0,                       // vfov
+        the_scene.nx/the_scene.ny,  // aspect
+        0.0,                        // aperture
+        10.0,                       // dist_to_focus
+        0.0,                        // t0
+        1.0);                       // t1
+    
+    the_scene.world = new hitable_list(list, i);
 }
 
-hitable *cornell_smoke()
+void cornell_smoke(scene &the_scene)
 {
     hitable **list = new hitable*[8];
     int i = 0;
@@ -194,10 +212,21 @@ hitable *cornell_smoke()
     list[i++] = new constant_medium(b1, 0.01, new constant_texture(vec3(1.0, 1.0, 1.0)));
     list[i++] = new constant_medium(b2, 0.01, new constant_texture(vec3(0.0, 0.0, 0.0)));
     
-    return new hitable_list(list, i);
+    the_scene.cam = new camera(
+        vec3(278, 278, -800),       // lookfrom
+        vec3(278.0, 278.0, 0.0),    // lookat
+        vec3(0.0, 1.0, 0.0),        // camup
+        40.0,                       // vfov
+        the_scene.nx/the_scene.ny,  // aspect
+        0.0,                        // aperture
+        10.0,                       // dist_to_focus
+        0.0,                        // t0
+        1.0);                       // t1
+    
+    the_scene.world = new hitable_list(list, i);
 }
 
-hitable *cornell_balls()
+void cornell_balls(scene &the_scene)
 {
     hitable **list = new hitable*[9];
     
@@ -219,10 +248,21 @@ hitable *cornell_balls()
     list[i++] = new constant_medium(boundary, 0.1, new constant_texture(vec3(1.0, 1.0, 1.0)));
     list[i++] = new translate(new rotate_y(new box(vec3(0, 0, 0), vec3(165, 330, 165), white),  15), vec3(265,0,295));
     
-    return new hitable_list(list,i);
+    the_scene.cam = new camera(
+        vec3(278, 278, -800),       // lookfrom
+        vec3(278.0, 278.0, 0.0),    // lookat
+        vec3(0.0, 1.0, 0.0),        // camup
+        40.0,                       // vfov
+        the_scene.nx/the_scene.ny,  // aspect
+        0.0,                        // aperture
+        10.0,                       // dist_to_focus
+        0.0,                        // t0
+        1.0);                       // t1
+    
+    the_scene.world = new hitable_list(list, i);
 }
 
-hitable *final_test()
+void final_test(scene &the_scene)
 {
     hitable **list = new hitable*[30];
     hitable **boxlist = new hitable*[10000];
@@ -235,7 +275,8 @@ hitable *final_test()
     material *white = new lambertian(new constant_texture(vec3(0.73, 0.73, 0.73)));
     material *ground = new lambertian(new constant_texture(vec3(0.48, 0.83, 0.53)));
     material *brown = new lambertian(new constant_texture(vec3(0.7, 0.3, 0.1)));
-    material *light = new diffuse_light(new constant_texture(vec3(7, 7, 7)) );
+    //material *light = new diffuse_light(new constant_texture(vec3(7, 7, 7)) );
+    material *light = new diffuse_light(new constant_texture(vec3(1, 1, 1)) );
     material *glass = new dielectric(1.5);
     material *aluminum = new metal(vec3(0.8, 0.8, 0.9), 10.0);
     material *bw_marble = new lambertian(pertext);
@@ -283,11 +324,22 @@ hitable *final_test()
         boxlist2[j] = new sphere(vec3(165 * drand48(), 165 * drand48(), 165 * drand48()), 10, white);
     }
     list[l++] = new translate(new rotate_y(new bvh_node(boxlist2, ns, 0.0, 1.0), 15), vec3(-100, 270, 395));
+        
+    the_scene.cam = new camera(
+        vec3(478, 278, -600),       // lookfrom
+        vec3(278.0, 278.0, 0.0),    // lookat
+        vec3(0.0, 1.0, 0.0),        // camup
+        40.0,                       // vfov
+        the_scene.nx/the_scene.ny,  // aspect
+        0.0,                        // aperture
+        10.0,                       // dist_to_focus
+        0.0,                        // t0
+        1.0);                       // t1
     
-    return new hitable_list(list, l);
+    the_scene.world = new hitable_list(list, l);
 }
 
-void cornell_spheres(hitable *&hl, camera *&cam)
+void cornell_spheres(scene &the_scene)
 {
     hitable **list = new hitable*[50];
     
@@ -309,29 +361,31 @@ void cornell_spheres(hitable *&hl, camera *&cam)
     list[i++] = new sphere(vec3(162.5, 100, 147.5), 100, glass);
     list[i++] = new sphere(vec3(397.5, 100, 377.5), 100, silver);
     
-    cam = new camera(
+    the_scene.cam = new camera(
         vec3(278, 278, -800),       // lookfrom
         vec3(278.0, 278.0, 0.0),    // lookat
         vec3(0.0, 1.0, 0.0),        // camup
         40.0,                       // vfov
-        1.0,                        // aspect
+        the_scene.nx/the_scene.ny,  // aspect
         0.0,                        // aperture
         10.0,                       // dist_to_focus
         0.0,                        // t0
         1.0);                       // t1
     
-    hl = new hitable_list(list, i);
+    the_scene.world = new hitable_list(list, i);
 }
 
 int main()
 {
-    int nx = 2*200;
-    int ny = 2*200;
-    int ns = 1000;
-        
+    scene the_scene;
+    
+    the_scene.nx = 2*200;
+    the_scene.ny = 2*200;
+    the_scene.ns = 10;
+    
     std::ofstream myfile("test.ppm");
 
-    myfile << "P3\n" << nx << " " << ny << "\n255\n";
+    myfile << "P3\n" << the_scene.nx << " " << the_scene.ny << "\n255\n";
     
     //hitable *world = standard_scene();
     //hitable *world = random_scene();
@@ -381,30 +435,28 @@ int main()
     float vfov = 40.0;
     */
     
-    //camera cam(lookfrom, lookat, camup, vfov, float(nx)/float(ny), aperture, dist_to_focus, 0.0, 1.0);
-    hitable *world { nullptr };
-    camera *cam { nullptr };
-    
-    cornell_spheres(world, cam);
+    cornell_box(the_scene);
+    //final_test(the_scene);
+    //cornell_spheres(the_scene);
         
     int rl = 0,
         rp = 0;
-    for(int j = ny - 1; j >= 0; --j) {
+    for(int j = the_scene.ny - 1; j >= 0; --j) {
         ++rl;
-        for(int i = 0; i < nx; ++i) {
+        for(int i = 0; i < the_scene.nx; ++i) {
             ++rp;
-            std::cout << "\rRenderizando pixel " << rp << "/" << nx*ny << " (linea " << rl << "/" << ny << ")";
+            std::cout << "\rRenderizando pixel " << rp << "/" << the_scene.nx*the_scene.ny << " (linea " << rl << "/" << the_scene.ny << ")";
             vec3 col(0.0, 0.0, 0.0);
             
-            for(int s = 0; s < ns; ++s) {
-                float u = float(i + drand48()) / float(nx);
-                float v = float(j + drand48()) / float(ny);
+            for(int s = 0; s < the_scene.ns; ++s) {
+                float u = float(i + drand48()) / float(the_scene.nx);
+                float v = float(j + drand48()) / float(the_scene.ny);
                 
-                ray r = cam->get_ray(u, v);
-                col += color(r, world, 0);
+                ray r = the_scene.cam->get_ray(u, v);
+                col += color(r, the_scene.world, 0);
             }
             
-            col /= float(ns);
+            col /= float(the_scene.ns);
             col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
             
             int ir = int(255.99 * (col.r() > 1.0 ? 1.0 : col.r()));
