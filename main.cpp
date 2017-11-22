@@ -244,8 +244,6 @@ hitable *final_test()
     unsigned char *tex_data = stbi_load("earthmap.jpg", &nx, &ny, &nn, 0);
     material *emat =  new lambertian(new image_texture(tex_data, nx, ny));
     
-    
-    
     int     nb = 20,
             b = 0;
     
@@ -291,13 +289,15 @@ hitable *final_test()
 
 void cornell_spheres(hitable *&hl, camera *&cam)
 {
-    hitable **list = new hitable*[9];
+    hitable **list = new hitable*[50];
     
     int i = 0;
     
     material *red = new lambertian( new constant_texture(vec3(0.65, 0.05, 0.05)) );
     material *white = new lambertian( new constant_texture(vec3(0.73, 0.73, 0.73)) );
     material *green = new lambertian( new constant_texture(vec3(0.12, 0.45, 0.15)) );
+    material *silver = new metal(vec3(1.0, 1.0, 1.0), 0.0);
+    material *glass = new dielectric(1.5);
     material *light = new diffuse_light( new constant_texture(vec3(5, 5, 5)) );
     
     list[i++] = new flip_normals(new rect_yz(0, 555, 0, 555, 555, green));
@@ -306,10 +306,8 @@ void cornell_spheres(hitable *&hl, camera *&cam)
     list[i++] = new flip_normals(new rect_xz(0, 555, 0, 555, 555, white));
     list[i++] = new rect_xz(0, 555, 0, 555, 0, white);
     list[i++] = new flip_normals(new rect_xy(0, 555, 0, 555, 555, white));
-    hitable *boundary = new sphere(vec3(160, 100, 145), 100, new dielectric(1.5));
-    list[i++] = boundary;
-    list[i++] = new constant_medium(boundary, 0.1, new constant_texture(vec3(1.0, 1.0, 1.0)));
-    list[i++] = new translate(new rotate_y(new box(vec3(0, 0, 0), vec3(165, 330, 165), white),  15), vec3(265,0,295));
+    list[i++] = new sphere(vec3(162.5, 100, 147.5), 100, glass);
+    list[i++] = new sphere(vec3(397.5, 100, 377.5), 100, silver);
     
     cam = new camera(
         vec3(278, 278, -800),       // lookfrom
@@ -329,7 +327,7 @@ int main()
 {
     int nx = 2*200;
     int ny = 2*200;
-    int ns = 10;
+    int ns = 1000;
         
     std::ofstream myfile("test.ppm");
 
@@ -363,13 +361,14 @@ int main()
     */
     
     // Cornell box cam
-    
+    /*    
     vec3 lookfrom(278, 278, -800);
     vec3 lookat(278.0, 278.0, 0.0);
     vec3 camup(0.0, 1.0, 0.0);
     float dist_to_focus = 10.0;
     float aperture = 0.0;
     float vfov = 40.0;
+    */
         
     
     // Final cam
